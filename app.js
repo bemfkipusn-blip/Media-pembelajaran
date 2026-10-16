@@ -50,8 +50,8 @@ DATA.materi.forEach((m) => {
 // Kuis
 (function () {
   const box = $("#kuis");
-  let n = 0, skor = 0;
-  const mulai = () => { n = 0; skor = 0; soal(); };
+  let n = 0, skor = 0, salahList = [];
+  const mulai = () => { n = 0; skor = 0; salahList = []; soal(); };
   const soal = () => {
     box.replaceChildren();
     if (n >= DATA.kuis.length) return selesai();
@@ -67,8 +67,8 @@ DATA.materi.forEach((m) => {
           t.disabled = true;
           if (k === q.benar) t.classList.add("benar");
         });
-        if (idx === q.benar) { skor++; umpan.textContent = "Benar! 🎉"; }
-        else { b.classList.add("salah"); umpan.textContent = "Kurang tepat."; }
+        if (idx === q.benar) { skor++; umpan.textContent = "Benar! " + q.alasan; }
+        else { b.classList.add("salah"); salahList.push(q); umpan.textContent = "Kurang tepat. " + q.alasan; }
         lanjut.hidden = false;
       };
       return b;
@@ -79,7 +79,55 @@ DATA.materi.forEach((m) => {
     const nilai = Math.round((skor / DATA.kuis.length) * 100);
     const ulang = el("button", {}, "Ulangi kuis");
     ulang.onclick = mulai;
-    box.append(el("h2", {}, "Hasil Kuis"), el("p", { className: "skor" }, `${skor} / ${DATA.kuis.length} benar (nilai ${nilai})`), ulang);
+    const pesan = nilai >= 80 ? "Hebat! Kamu sudah paham materinya." : nilai >= 60 ? "Bagus, sedikit lagi!" : "Ayo baca materinya sekali lagi, lalu coba lagi.";
+    box.append(el("h2", {}, "Hasil Kuis"), el("p", { className: "skor" }, `${skor} / ${DATA.kuis.length} benar (nilai ${nilai})`), el("p", {}, pesan));
+    if (salahList.length) {
+      box.append(el("h3", {}, "Yang perlu diulang"));
+      const ul = el("ul");
+      salahList.forEach((q) => ul.append(el("li", {}, `${q.tanya} Jawaban: ${q.opsi[q.benar]}.`)));
+      box.append(ul);
+    }
+    box.append(ulang);
   };
   mulai();
+})();
+
+// Simulasi: faktor pembatas fotosintesis
+(function () {
+  const box = $("#simulasi");
+  const faktor = [
+    { id: "cahaya", nama: "Cahaya", nilai: 70 },
+    { id: "air", nama: "Air", nilai: 70 },
+    { id: "co2", nama: "Karbon dioksida", nilai: 70 }
+  ];
+  box.append(el("p", { className: "info" }, "Geser pengaturan dan lihat laju fotosintesis. Laju ditentukan oleh faktor yang paling sedikit."));
+  const baris = faktor.map((f) => {
+    const lab = el("label", { htmlFor: "sim-" + f.id });
+    const out = el("output", {}, f.nilai + "%");
+    lab.append(f.nama + ": ", out);
+    const r = el("input", { type: "range", id: "sim-" + f.id, min: 0, max: 100, value: f.nilai });
+    r.oninput = () => { f.nilai = +r.value; out.textContent = f.nilai + "%"; hitung(); };
+    box.append(el("div", { className: "slider" }));
+    box.lastChild.append(lab, r);
+    return r;
+  });
+  const meter = el("div", { className: "meter" });
+  const isi = el("div", { className: "isi" });
+  meter.append(isi);
+  const hasil = el("p", { className: "skor" });
+  const catatan = el("p", { className: "info" });
+  const gelembung = el("p", { className: "gelembung", "aria-hidden": "true" });
+  box.append(el("h3", {}, "Laju fotosintesis"), meter, hasil, gelembung, catatan);
+  function hitung() {
+    const min = Math.min(...faktor.map((f) => f.nilai));
+    const pembatas = faktor.filter((f) => f.nilai === min).map((f) => f.nama.toLowerCase());
+    isi.style.width = min + "%";
+    hasil.textContent = min + "%";
+    gelembung.textContent = "O₂ ".repeat(Math.round(min / 10)) || "—";
+    catatan.textContent = min === 0
+      ? "Fotosintesis berhenti: " + pembatas.join(", ") + " habis."
+      : min >= 90 ? "Semua faktor cukup. Laju hampir maksimal."
+      : "Faktor pembatas: " + pembatas.join(" dan ") + ". Menambah faktor lain tidak akan menaikkan laju.";
+  }
+  hitung();
 })();

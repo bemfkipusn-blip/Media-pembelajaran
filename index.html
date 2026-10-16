@@ -3,24 +3,28 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Media Pembelajaran: Tata Surya</title>
+  <title>Media Pembelajaran Fotosintesis</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="wrap">
   <header>
     <h1 id="judul"></h1>
     <nav>
       <button data-tab="materi" class="aktif">Materi</button>
       <button data-tab="kartu">Kartu Hafalan</button>
+      <button data-tab="simulasi">Simulasi</button>
       <button data-tab="kuis">Kuis</button>
     </nav>
   </header>
   <main>
     <section id="materi"></section>
     <section id="kartu" hidden></section>
+    <section id="simulasi" hidden></section>
     <section id="kuis" hidden></section>
   </main>
   <footer>Media Pembelajaran Interaktif</footer>
+  </div>
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
